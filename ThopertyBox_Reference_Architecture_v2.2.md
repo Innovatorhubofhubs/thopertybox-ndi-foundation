@@ -1,731 +1,609 @@
-# Independent Technical Review Request
 
-## Subject
-**NDI™ Reference Architecture v2.2 — Candidate Architectural Primitive Review**
+NDI™ Reference Architecture v2.3
 
-I am seeking an independent technical review of the attached public working draft.
+Candidate Public Working Draft
 
-Please assess it as though you are a senior platform architect, distinguished engineer, standards reviewer, or architecture review board member at a major cloud provider, AI infrastructure company, content-authenticity organisation, or standards body.
+Status
 
-Please assess the architecture on technical merit rather than commercial potential. Be direct and critical. The objective is not to defend the proposal, but to identify any remaining ambiguity, architectural collapse, hidden assumption, contradiction, or unsupported claim.
+This document defines a candidate reference architecture for NDI™ — Neutral Discovery Infrastructure.
 
-Please answer the following questions:
+NDI is presented for independent technical review as a proposed architectural responsibility. It is not presented as a finished standard, product specification, compliance mechanism, or claim of technical novelty in its underlying cryptographic components.
 
-1. Is NDI now defined as one clear, distinct architectural responsibility?
-2. Does it remain meaningfully distinct from logging, timestamping, provenance, registries, and ordinary audit records?
-3. Are “first observed,” “declared implementation scope,” and “neutrality” sufficiently precise and bounded?
-4. Is the boundary between NDI observation and downstream chronology, verification, provenance, governance, policy, and ranking clear?
-5. Are the minimum observation-record and ingress-contract concepts sufficient for a reference architecture at this stage, without over-specifying implementation?
-6. Does the draft acknowledge the right threats and conformance questions? What major issue is still missing?
-7. Would you recommend: reject; revise before further evaluation; continue technical evaluation; or begin early implementation/conformance work?
-8. What are the three most important changes, if any, required before public publication?
-9. If this arrived internally at Microsoft, Google, NVIDIA, Cloudflare, Adobe, C2PA, an IETF/W3C community, or another major infrastructure organisation, would you forward it for further technical discussion? Why or why not?
+The purpose of v2.3 is narrower:
 
-Please distinguish clearly between:
-- flaws in the architectural proposition;
-- missing implementation specifications;
-- and matters that are appropriately deferred to later technical work.
+«To determine whether neutral, scope-declared observation before downstream evaluation merits recognition as a distinct architectural responsibility.»
 
 ---
 
-# NDI™ Reference Architecture
+1. North Star
 
-**Version 2.2 — Public Working Draft**  
-**Date:** 4 August 2026  
-**Developed and published by ThopertyBox™**
+Digital information increasingly passes through systems that classify, transform, rank, verify, moderate, attribute, recommend, govern, or amplify it.
 
-> This document defines an architectural responsibility, not a complete protocol, product, implementation, legal claim, or assurance system.
+Those functions may be necessary and valuable.
 
----
+But each occurs after an observation has entered a system boundary.
 
-## 1. North Star
+NDI proposes that the observation itself can be treated as a distinct architectural responsibility:
 
-**NDI defines one architectural responsibility:**
+«Establish a neutral, scope-bounded reference to a qualifying digital observation before downstream systems determine what that observation means.»
 
-> **Record, without evaluative judgement, that a digital disclosure has been accepted and recorded within a declared implementation scope before downstream evaluation begins.**
+NDI does not establish universal origin.
 
-NDI does not determine truth, ownership, origin, authenticity, legitimacy, reputation, policy, ranking, governance, legal priority, or trustworthiness.
+It establishes a reference to an observation made within a declared implementation scope and ordering domain.
 
-It does not replace verification, provenance, attribution, moderation, compliance, or audit systems.
-
-It establishes a scoped observation reference that those systems may later use.
-
-> **One common starting point. Many independent paths forward.**
+This distinction is fundamental.
 
 ---
 
-## 2. Purpose
+2. The Architectural Question
 
-Modern digital systems perform many important functions after information enters an environment: logging, provenance tracking, verification, policy enforcement, moderation, ranking, search, governance, compliance, identity resolution, and AI reasoning or agent action.
+Existing architectures provide mature mechanisms for:
 
-The architectural question addressed here is narrower:
-
-> **Which architectural responsibility records the initial scoped observation before those downstream functions begin to evaluate, transform, classify, rank, accept, reject, or act upon the disclosure?**
-
-NDI proposes that this responsibility should be explicit, bounded, and separable.
-
-This document is intended to determine whether that responsibility is sufficiently distinct to justify continued technical evaluation.
-
----
-
-## 3. Status and Scope of This Document
-
-This is a **reference architecture**.
-
-It defines:
-- the responsibility of NDI;
-- its boundaries and non-goals;
-- the meaning of first observation within scope;
-- the relationship between observation and downstream functions;
-- minimum conceptual properties of an observation record;
-- high-level security, conformance, and interoperability requirements.
-
-It does not define:
-- a mandatory database;
-- a complete wire protocol;
-- a final identifier scheme;
-- a cryptographic profile;
-- a consensus mechanism;
-- a global clock;
-- a production deployment model;
-- a certification programme;
-- a legal evidentiary standard;
-- a commercial operating model.
-
-Those matters belong to later protocol, implementation, conformance, governance, and legal work.
-
----
-
-## 4. Core Definitions
-
-### 4.1 Digital Disclosure
-
-A **digital disclosure** is a digital artefact, data item, claim, payload, message, model output, or associated submission presented to an NDI implementation for observation within that implementation’s declared scope.
-
-A disclosure may be public, private, restricted, encrypted, or access-controlled.
-
-Observation does not, by itself, establish authorship, ownership, originality, truth, authenticity, legality, priority outside the declared scope, or permission to publish.
-
-### 4.2 Observation Boundary
-
-The **observation boundary** is the declared point at which an implementation accepts a disclosure for NDI recording.
-
-The boundary must be identifiable in the implementation’s scope declaration.
-
-It may correspond to an ingress API, edge gateway, platform upload boundary, enterprise ingestion service, consortium submission interface, archive deposit interface, or another explicitly declared acceptance point.
-
-Events before that boundary are not NDI observations by that implementation.
-
-### 4.3 First Observed
-
-**First observed** means:
-
-> the earliest successful NDI recording of a particular submitted disclosure by a particular implementation within its declared scope.
-
-It does **not** mean first created, first published anywhere, first seen by any human, first seen across the whole internet, first globally, or first across every NDI implementation.
-
-“First” is therefore always relative to:
-1. the implementation;
-2. the declared scope;
-3. the observation boundary;
-4. the record identity or payload binding used by that implementation.
-
-### 4.4 Declared Implementation Scope
-
-A **declared implementation scope** identifies the environment within which an NDI observation claim applies.
-
-A scope declaration should identify, at minimum:
-- the implementation or operator;
-- the observation boundary;
-- the domain or class of disclosures accepted;
-- the ordering domain;
-- the applicable retention or continuity commitment;
-- the scope identifier and version;
-- any declared eligibility rules required for safe technical operation.
-
-Examples include one social platform, one enterprise deployment, one cloud ingestion service, one public archive, one media consortium, or one federated group of participating operators.
-
-No implementation may infer from its own record that it possesses universal authority over observations outside its declared scope.
-
-### 4.5 Neutrality
-
-Within this architecture, **neutrality** is not a claim that an operator, institution, or society is free from bias.
-
-It is a constraint on the NDI responsibility:
-
-> **NDI does not evaluate the disclosure’s truth, quality, ownership, identity, legitimacy, policy status, ranking value, or downstream acceptability when producing the observation record.**
-
-Neutrality is therefore defined by excluded functions and observable handling requirements, not by moral authority.
-
-### 4.6 Evaluation
-
-**Evaluation** includes any downstream judgement or transformation that assigns meaning, status, preference, eligibility, trust, risk, authenticity, ownership, policy treatment, ranking, or consequence to a disclosure.
-
-NDI ends before those functions begin.
-
-### 4.7 Observation Record
-
-An **observation record** is the stable reference produced when an NDI implementation successfully records a disclosure within scope.
-
-It is evidence of the implementation’s observation event, not evidence that claims within the disclosure are true.
-
----
-
-## 5. The Architectural Gap
-
-Existing systems can record events. The proposal does not deny that.
-
-The gap is one of **primary responsibility and boundary discipline**.
-
-In many systems, initial receipt is captured incidentally inside application logs, message queues, database timestamps, provenance stores, registration systems, moderation pipelines, analytics systems, or internal audit records.
-
-Those systems may preserve useful evidence, but their principal responsibilities differ. They may also:
-- record only after parsing or filtering;
-- overwrite or aggregate events;
-- apply policy before durable recording;
-- use implementation-specific semantics;
-- be inaccessible outside the operating platform;
-- or combine observation with evaluation.
-
-NDI proposes that scoped first observation should be an explicit architectural responsibility with its own contract, rather than an incidental side effect of another system.
-
----
-
-## 6. Architectural Responsibility
-
-NDI is responsible for:
-1. receiving a disclosure at a declared observation boundary;
-2. binding the observation to the submitted disclosure or a defined representation of it;
-3. assigning a stable record identifier;
-4. recording the event within the implementation’s ordering domain;
-5. binding the record to the declared scope;
-6. preserving historical continuity according to the implementation’s declared commitments;
-7. returning or exposing a reference that downstream systems may use.
-
-NDI is not responsible for deciding whether the disclosure is true, false, authentic, original, owned by the submitter, policy-compliant, rank-worthy, trustworthy, publishable, removable, or legally prior.
-
----
-
-## 7. Architecture Principles
-
-### AP-1 — Non-Evaluative Observation
-
-An NDI implementation records the observation event without deciding the disclosure’s truth, ownership, authenticity, reputation, policy status, rank, or value.
-
-Technical controls necessary to keep the service safe and available must not be represented as judgements about the disclosure itself.
-
-### AP-2 — Explicit Boundary Before Downstream Evaluation
-
-The NDI observation boundary must be identifiable.
-
-Where an implementation performs parsing, moderation, enrichment, classification, verification, or policy evaluation, those functions must be downstream of the NDI boundary or explicitly identified as outside NDI conformance.
-
-### AP-3 — Scope-Relative First Observation
-
-Every first-observation claim is relative to a declared implementation scope.
-
-NDI does not claim universal first appearance across the internet.
-
-### AP-4 — Historical Continuity
-
-A successful observation record is not silently rewritten to alter the original observation event.
-
-Corrections, revocations, access changes, disputes, or later facts should be represented through linked subsequent records or other auditable mechanisms.
-
-This principle does not require a particular storage technology and does not claim absolute immutability.
-
-### AP-5 — Independent Implementations
-
-Different NDI implementations may observe the same disclosure independently.
-
-One implementation’s record does not automatically invalidate or supersede another’s.
-
-Cross-implementation correlation may be supported through interoperable identifiers or payload bindings, but universal ordering is not assumed.
-
-### AP-6 — Technology and Platform Independence
-
-NDI does not mandate blockchain, distributed ledgers, a specific database, a particular cloud, a particular consensus protocol, a single timestamp authority, a programming language, or one operating organisation.
-
-### AP-7 — Minimum Disclosure
-
-An implementation should not require more content or identity exposure than is necessary to create and maintain the scoped observation reference.
-
-Privacy-preserving payload binding, controlled visibility, and confidential submission are compatible with NDI.
-
-### AP-8 — Downstream Autonomy
-
-Downstream systems remain free to apply their own verification, provenance, governance, moderation, policy, ranking, legal, analytical, and trust decisions.
-
-NDI seeks neither to centralise trust nor replace platform autonomy.
-
----
-
-## 8. Reference Flow
-
-```text
-[ Submitter / Source / System ]
-              |
-              v
-+------------------------------------------+
-| Declared Observation Boundary            |
-|                                          |
-| Accept submission for NDI recording      |
-| Bind disclosure to observation event     |
-+--------------------+---------------------+
-                     |
-                     v
-+------------------------------------------+
-| NDI Observation Responsibility           |
-|                                          |
-| - assign record identifier               |
-| - bind scope                              |
-| - assign local sequence/order reference  |
-| - record observation event               |
-| - preserve continuity                    |
-+--------------------+---------------------+
-                     |
-                     v
-[ Observation Reference / Receipt ]
-                     |
-                     v
-+------------------------------------------+
-| Independent Downstream Functions         |
-|                                          |
-| chronology refinement · provenance       |
-| verification · identity · policy         |
-| moderation · ranking · compliance        |
-| governance · analytics · AI processing   |
-+------------------------------------------+
-```
-
-The downstream functions may accept, ignore, question, correlate, or reject the relevance of an NDI reference.
-
-The NDI record does not dictate their conclusion.
-
----
-
-## 9. The Ingress Contract
-
-The **Ingress Contract** defines the minimum conceptual exchange at the observation boundary.
-
-A conforming implementation should be capable of expressing, at minimum:
-- `record_id` — stable identifier for the observation record;
-- `scope_id` — identifier of the declared implementation scope;
-- `scope_version` — version of the applicable scope declaration;
-- `observation_status` — successful recording or an explicit non-recording outcome;
-- `observed_at` — implementation time reference, where used;
-- `sequence_reference` — local ordering or sequencing reference;
-- `payload_binding` — binding to the submitted disclosure or defined representation;
-- `record_created_at` — time the observation record was durably created;
-- `previous_record_reference` or continuity mechanism, where applicable;
-- `implementation_identifier`;
-- `receipt_authentication` — implementation-defined means of validating the receipt.
-
-A future protocol may add fields, but it must preserve the distinction between the observation event, claims made by the submitter, and downstream evaluative conclusions.
-
-### 9.1 Payload Binding
-
-Payload binding allows an implementation to associate the record with the disclosure without necessarily exposing the content publicly.
-
-Possible implementations include hashes, commitments, content-addressed identifiers, encrypted references, or other techniques.
-
-This architecture does not select a final mechanism.
-
-A payload binding proves only that the implementation associated its observation record with a defined representation. It does not prove authorship, ownership, truth, or legality.
-
----
-
-## 10. NDI and Chronology
-
-NDI records an observation event and provides enough ordering information for that event to be placed within the implementation’s local ordering domain.
-
-A separate chronology function may later compare multiple records, reconcile clocks, correlate observations across scopes, construct timelines, or apply stronger ordering semantics.
-
-Where the term **NCO™ — Neutral Chronological Orientation** is used in the wider ThopertyBox framework:
-- **NDI** owns the scoped observation event and its receipt;
-- **NCO** owns extended chronological orientation across records or environments.
-
-NDI must not be described as establishing a universal chronology.
-
----
-
-## 11. Comparison with Adjacent Categories
-
-### 11.1 NDI vs Logging
-
-A log records operational events for purposes such as debugging, observability, monitoring, security, or audit.
-
-A log may capture receipt of a disclosure, but usually as one event among many and according to the emitting system’s internal needs.
-
-NDI differs because scoped first observation is its primary architectural responsibility.
-
-A general log can be used to implement part of NDI only if it also satisfies the NDI boundary, scope, continuity, non-evaluation, record, and conformance requirements.
-
-### 11.2 NDI vs Timestamping
-
-Timestamping binds a time value or time assertion to data.
-
-NDI may use timestamps, but its responsibility is broader and more specific: it records a scoped observation event, binds it to a declared scope and disclosure representation, and produces a stable reference.
-
-A timestamp alone does not define the observation boundary, scope, non-evaluation contract, or record semantics.
-
-### 11.3 NDI vs Provenance
-
-Provenance describes origin claims, derivation, custody, transformation, editing, or history.
-
-NDI does not establish those facts.
-
-An NDI record may become one event within a provenance history, but it only states that a particular implementation observed a defined disclosure within scope.
-
-Provenance explains the trail. NDI anchors one scoped point at which that trail may be observed.
-
-### 11.4 NDI vs Registries
-
-A registry maintains entries for administration, discovery, rights, identity, inventory, or publication.
-
-A registry may contain NDI records, but registration usually carries domain-specific semantics.
-
-NDI does not manage the full status or lifecycle of a registered entity. It records the scoped observation event.
-
-### 11.5 NDI vs Audit Records
-
-Audit records support accountability and later review of actions or controls.
-
-NDI records may support audit, but NDI is positioned at the observation boundary and deliberately excludes the wider judgement and accountability functions of an audit system.
-
----
-
-## 12. Neutrality and Conformance
-
-Neutrality cannot be established by branding or self-description alone.
-
-A future conformance profile should define observable tests.
-
-Candidate conformance requirements include:
-
-1. **Boundary test** — demonstrate that a successful record is created at the declared observation boundary before specified downstream evaluative functions.
-2. **Non-evaluation test** — demonstrate that receipt generation does not depend on truth, ownership, popularity, reputation, ranking, or policy conclusions.
-3. **Duplicate test** — disclose how repeated or identical submissions are handled. Deduplication must not silently erase evidence that multiple submission events occurred.
-4. **Suppression test** — identify all conditions under which a submission is not recorded and produce an explicit non-recording outcome where safe and appropriate.
-5. **Continuity test** — demonstrate that a previously issued record is not silently rewritten to change the original observation event.
-6. **Scope test** — demonstrate that every receipt identifies the applicable scope and does not imply authority beyond it.
-7. **Ordering test** — demonstrate consistent behaviour of the local sequence or ordering reference under concurrent submissions.
-8. **Black-box behaviour test** — submit controlled inputs that differ only in evaluative attributes and test whether receipt behaviour improperly varies.
-
-These tests do not prove that an operator is free from all hidden misconduct. They create falsifiable requirements and auditable evidence.
-
----
-
-## 13. Eligibility, Safety Controls, and the Pre-Observation Boundary
-
-A real implementation may require technical controls to remain safe, lawful, and available.
-
-Examples include protocol validation, maximum payload sizes, malware containment, rate limits, authentication for restricted services, duplicate transport suppression, denial-of-service protection, and legally required access restrictions.
-
-These controls do not automatically violate neutrality.
-
-However:
-1. they must be declared;
-2. they must be limited to operational necessity;
-3. they must not be misrepresented as NDI judgements about truth or value;
-4. they should produce auditable outcomes;
-5. they must not silently move substantive evaluation ahead of the declared observation boundary.
-
-A future conformance profile must distinguish **technical admissibility** from **evaluative eligibility**.
-
-Only the former may occur as an NDI-adjacent safety control.
-
----
-
-## 14. Ordering and Time Model
-
-NDI does not assume that wall-clock time alone is sufficient.
-
-A robust implementation may combine implementation timestamps, monotonic counters, sequence numbers, append positions, trusted time services, cryptographic chaining, distributed ordering mechanisms, or other methods.
-
-The architecture requires that the implementation declare:
-- what its time value means;
-- what its sequence reference means;
-- the ordering guarantees it provides;
-- known clock-skew limitations;
-- whether ordering applies to one node, one service, one region, or the whole declared scope.
-
-NDI does not require a total global order across independent implementations.
-
----
-
-## 15. Duplicate and Repeated Disclosures
-
-A repeated disclosure may represent a transport retry, duplicate submission, second actor submitting identical content, the same actor resubmitting, or a genuinely distinct event with the same payload.
-
-An NDI implementation must not treat identical payloads as proof that the events are identical.
-
-A future protocol should distinguish:
-- **payload identity**;
-- **submission-event identity**;
-- **observation-record identity**.
-
-Implementations may optimise storage, but they should preserve an auditable representation of distinct successful observation events.
-
----
-
-## 16. Visibility and Privacy
-
-NDI records that a disclosure was observed. It does not require the content itself to be public.
-
-Implementations may support public receipts, private receipts, encrypted disclosures, restricted verification, delayed publication, selective disclosure, confidential enterprise use, and protected creator or innovator submissions.
-
-Public visibility of a receipt does not imply public visibility of the underlying content.
-
-Privacy and access-control decisions must not alter the original fact of the scoped observation event.
-
----
-
-## 17. Threat Considerations
-
-This section identifies threats that future specifications and implementations must address. It is not a complete threat model.
-
-### 17.1 Predating and Backdating
-An operator may attempt to assign an earlier time or sequence position than the actual observation event.
-
-### 17.2 Reordering
-Concurrent or distributed submissions may be reordered accidentally or deliberately.
-
-### 17.3 Replay
-An attacker may resubmit an old disclosure or receipt.
-
-### 17.4 Suppression
-An operator may fail to record, hide, delay, or selectively discard submissions.
-
-### 17.5 Selective Neutrality
-An implementation may claim neutrality while applying hidden content, identity, or reputation filters before recording.
-
-### 17.6 Operator Compromise
-An attacker or insider may manipulate records, keys, sequence state, or interfaces.
-
-### 17.7 Flooding and Resource Exhaustion
-A neutral observation endpoint may be abused for denial of service or storage exhaustion.
-
-### 17.8 Payload-Binding Attacks
-Weak or ambiguous payload representation may create collisions, canonicalisation disputes, or misleading equivalence.
-
-### 17.9 Scope Misrepresentation
-An implementation may imply that a local observation is global or authoritative outside its scope.
-
-### 17.10 Privacy Leakage
-Metadata, timing, identifiers, or public queries may expose confidential activity.
-
-Mitigations belong to later security and implementation profiles, but must include declared controls, auditability, recovery, key management, rate protection, binding rules, scope visibility, and privacy analysis.
-
----
-
-## 18. Interoperability Direction
-
-Two independent implementations should be able to exchange or compare observation references without assuming shared governance.
-
-A future interoperability profile should define:
-- common record representation;
-- scope identifiers;
-- payload-binding profiles;
-- receipt validation;
-- versioning;
-- error and rejection semantics;
-- cross-scope correlation;
-- privacy-preserving comparison;
-- conformance claims.
-
-Interoperability does not require a single operator or global database.
-
----
-
-## 19. Relationship to Existing Architectures
-
-NDI is intended to complement, not replace:
-- C2PA and Content Credentials;
-- W3C provenance models;
-- transparency logs;
+- logging;
 - trusted timestamping;
-- digital identity;
-- evidence and audit systems;
-- content moderation;
-- platform logging;
-- data lineage;
-- AI governance;
-- compliance tooling.
+- transparency;
+- provenance;
+- authentication;
+- registries;
+- audit;
+- content integrity;
+- policy enforcement; and
+- verification.
 
-A provenance system may consume an NDI observation as an early event.
+NDI does not propose to replace these mechanisms.
 
-A transparency system may publish or anchor NDI records.
+Its architectural question is different:
 
-An audit system may test NDI conformance.
+«Should the act of recording a qualifying observation, within an explicitly declared scope and before downstream evaluation, exist as a separately defined responsibility?»
 
-A platform may implement NDI at an ingress boundary while retaining all existing internal logs and controls.
+If that responsibility is already fully satisfied by an existing architecture, NDI may be unnecessary.
 
-NDI is not a claim that these systems are inadequate. It asks whether scoped non-evaluative first observation should be made explicit before they begin their own responsibilities.
-
----
-
-## 20. Relationship to AI Systems
-
-AI systems increasingly ingest, retrieve, transform, rank, and act upon external data.
-
-An NDI implementation may be placed before model-training data ingestion, retrieval-augmented generation pipelines, autonomous agent tool ingestion, model-output publication, enterprise AI knowledge ingestion, content moderation and ranking, or synthetic-media distribution.
-
-The NDI reference states what the implementation observed within scope before downstream AI processing.
-
-It does not establish that the material is safe, licensed, correct, representative, or suitable for training.
-
-Possible compute, reconciliation, or workflow savings are hypotheses for empirical evaluation, not claims established by this architecture.
+If it is not, NDI proposes a bounded contract for that responsibility.
 
 ---
 
-## 21. Relationship to ThopertyBox™
+3. Core Responsibility
 
-NDI is application-neutral.
+An NDI-conforming implementation records a qualifying observation event occurring at a declared observation boundary.
 
-ThopertyBox is a separate reference ecosystem that may implement the NDI responsibility as one part of a wider governed discovery workflow.
+The resulting observation record provides a persistent reference to:
 
-In that possible implementation, participants may submit a controlled disclosure, receive an observation reference, keep the disclosure private, develop it further, seek collaborators, investors, manufacturers, or partners, or later make it publicly discoverable through other services.
+- what representation was observed;
+- within which declared scope;
+- at which observation boundary;
+- according to which ordering domain;
+- under which scope and recording-policy version; and
+- where that event sits within the implementation's defined record sequence.
 
-That ecosystem is one possible implementation above NDI.
+NDI does not require that the observation subsequently be judged correct, authentic, lawful, original, trustworthy, important, or unique.
 
-It does not define the only valid use of NDI.
-
-A news agency, AI company, archive, enterprise CMS, media marketplace, social platform, cloud provider, or government body could implement the same architectural responsibility with entirely different products and workflows.
-
----
-
-## 22. Stewardship and Platform Autonomy
-
-NDI seeks neither to centralise trust nor replace platform autonomy.
-
-Any organisation may implement the responsibility while preserving independence over its products, policies, governance, moderation, ranking, legal obligations, commercial services, and technical choices.
-
-Long-term stewardship may be undertaken by an independent standards body, multi-stakeholder foundation, consortium, public-interest institution, or one or more interoperable operators.
-
-This document does not prescribe the final stewardship model.
-
-Architectural separation is more important than ownership alone.
+Its responsibility ends with the neutral observation reference.
 
 ---
 
-## 23. Example Scenarios
+4. What “First Observed” Means
 
-### 23.1 AI-Generated Media
-A platform receives an AI-generated video. NDI records the scoped observation event at the declared ingress boundary. Downstream systems inspect Content Credentials, verify signatures, classify synthetic content, apply policy, and rank or remove the item.
+Earlier NDI drafts used “first observed” as shorthand.
 
-### 23.2 Courtroom or Evidential Dispute
-An NDI record may show that one implementation observed a bound representation at a particular scoped sequence and time reference. A court or expert must still determine admissibility, authenticity, chain of custody, relevance, and legal effect.
+v2.3 explicitly bounds that term.
 
-### 23.3 Creator-Controlled Disclosure
-A creator submits an unpublished design to a controlled service. The service creates a private NDI observation receipt. The creator later chooses whether to disclose the content publicly, seek partners, or retain confidentiality.
+Within NDI:
 
-### 23.4 Cross-Platform Media Distribution
-A news organisation distributes the same media object to several platforms. Each platform may generate its own NDI observation record. The records may be compared through payload bindings without claiming one universal global first observation.
+«“First observed” means the earliest qualifying observation represented by an NDI implementation within its declared observation scope and according to its declared ordering semantics.»
 
-### 23.5 Removed Platform Content
-A platform removes content under its own policy. The NDI record may remain as a reference that the platform observed a bound disclosure at a particular point, subject to privacy and legal constraints. The record does not prevent removal and does not expose the content by default.
+It does not mean:
 
----
+- first existence anywhere;
+- first creation;
+- first publication globally;
+- first observation by another implementation;
+- first observation outside the declared scope;
+- proof of authorship;
+- proof of ownership; or
+- legal priority.
 
-## 24. Claims This Architecture Does Not Make
+An earlier observation or earlier evidence may exist elsewhere.
 
-This document does not claim that NDI:
-- proves truth;
-- proves ownership;
-- establishes global first publication;
-- prevents all censorship;
-- eliminates operator misconduct;
-- replaces provenance;
-- replaces platform logs;
-- is automatically legally admissible;
-- is already a standard;
-- is already implemented at internet scale;
-- guarantees compute or energy savings;
-- is immune to governance failure;
-- requires public disclosure;
-- requires centralised control.
+NDI neither denies nor adjudicates that possibility.
+
+Where ambiguity could arise, implementations SHOULD prefer the explicit expression:
+
+“earliest qualifying observation recorded within declared scope.”
 
 ---
 
-## 25. Evaluation Criteria for the Candidate Primitive
+5. Declared Implementation Scope
 
-NDI should continue to be treated as a distinct architectural primitive only if technical review supports all of the following:
+Every NDI implementation MUST declare the scope within which its observation claims apply.
 
-1. The responsibility is coherent and bounded.
-2. Existing categories do not already cover it sufficiently as a primary responsibility.
-3. The non-evaluation boundary can be made observable and testable.
-4. The ingress contract can be implemented without unacceptable latency or operational burden.
-5. Scope-relative claims can interoperate without implying global authority.
-6. The threat model can be addressed with credible controls.
-7. At least two independent implementations could conform without relying on one operator’s private semantics.
+A scope declaration MUST make discoverable, at minimum:
 
-If these conditions cannot be met, NDI should be collapsed into an existing category rather than maintained as a separate primitive.
+- the implementation or operator responsible for the scope;
+- the observation boundary;
+- the categories or sources eligible for observation;
+- relevant admission or exclusion conditions;
+- the applicable ordering domain;
+- the scope/version identifier;
+- material pre-observation filtering conditions;
+- the applicable retention or continuity commitment; and
+- limitations affecting interpretation of the record.
 
----
+Scope is not a claim of completeness beyond the declared boundary.
 
-## 26. Future Work
-
-If continued evaluation is recommended, the next technical work should include:
-1. a formal observation-record schema;
-2. a minimal protocol and API profile;
-3. a conformance test suite;
-4. a complete threat model;
-5. a privacy model;
-6. payload canonicalisation and binding profiles;
-7. ordering and clock profiles;
-8. a minimal reference implementation;
-9. two independent interoperability demonstrations;
-10. performance, latency, storage, and cost testing;
-11. governance and stewardship options;
-12. legal and evidentiary analysis by qualified specialists.
+An NDI implementation MUST NOT imply that absence from its records establishes absence outside its scope.
 
 ---
 
-## 27. Invitation to Technical Review
+6. Observation Boundary
 
-This architecture has been refined through repeated critical review.
+The observation boundary defines the point at which an event becomes eligible to create an NDI observation record.
 
-The objective has not been to collect agreement.
+This boundary is critical because neutrality cannot be claimed over information the implementation never had an opportunity to observe.
 
-It has been to expose ambiguity, narrow claims, strengthen boundaries, separate architecture from implementation, and identify what must still be proven.
+Therefore:
 
-The central question is:
+«NDI can make claims only about events that reach its declared observation boundary.»
 
-> **Does scoped, non-evaluative first observation constitute a sufficiently distinct architectural responsibility to justify further implementation, conformance, and standards work?**
+Filtering, moderation, admission control, crawler selection, access restrictions, technical failure, or other processes occurring before that boundary may affect what becomes observable.
 
----
+Where such processes materially constrain observation, their existence MUST be represented in the scope declaration or associated policy.
 
-## 28. Conclusion
-
-NDI proposes one bounded responsibility:
-
-> **Record that a digital disclosure was accepted and recorded within a declared implementation scope before downstream evaluation begins.**
-
-It provides a reference, not a verdict.
-
-It preserves platform autonomy.
-
-It does not centralise truth.
-
-It does not replace provenance, verification, governance, or policy.
-
-Its value, if established, would come from making the earliest observation boundary explicit, interoperable, and testable.
-
-Whether that responsibility should become part of future digital and AI infrastructure is now a matter for technical evaluation.
+An implementation MUST NOT describe material excluded before the observation boundary as though NDI neutrally observed and rejected it.
 
 ---
 
-## Version History
+7. Qualifying Observation Event
 
-- **v2.2 — 4 August 2026**  
-  Tightened first-observation semantics; formalised declared implementation scope; added ingress contract, adjacent-category comparison, conformance direction, ordering model, duplicate handling, privacy, threat considerations, interoperability direction, NDI/NCO boundary, and explicit claims not made.
+A qualifying observation event occurs when information satisfying the declared ingress conditions reaches the observation boundary and the implementation creates the corresponding observation record.
 
-- **v2.1 — July 2026**  
-  Established NDI as a distinct candidate architectural responsibility and strengthened scope and non-goals.
+The architecture distinguishes:
+
+observation from submission.
+
+A submission may be one mechanism by which an observation occurs, but NDI does not require all observations to originate through user submission.
+
+Depending on implementation scope, observation may occur through an API, platform boundary, controlled intake, automated discovery mechanism, system event, or another explicitly declared process.
+
+The mechanism MUST NOT change the semantic meaning of the resulting record:
+
+«the implementation observed the represented disclosure within the declared scope under the declared conditions.»
 
 ---
 
-© 2026 ThopertyBox™  
-NDI™ is an architectural concept developed by ThopertyBox™.  
-Public Working Draft for technical review.
+8. Minimum Observation Record
+
+A conforming observation record MUST contain, or provide a verifiable reference to, sufficient information to establish:
+
+1. Record identifier
+   A unique reference for the observation record.
+
+2. Payload or representation binding
+   A mechanism binding the record to the representation observed, without requiring NDI to interpret its meaning.
+
+3. Scope reference
+   The declared scope and applicable scope version.
+
+4. Observation boundary reference
+   The boundary or ingress context at which the qualifying observation occurred.
+
+5. Ordering information
+   Information sufficient to determine the event's position according to the implementation's declared ordering semantics.
+
+6. Time information
+   Any time assertion made by the implementation, with its semantics and limitations distinguishable from logical sequence ordering.
+
+7. Record integrity information
+   Sufficient information to support detection of unauthorised retrospective alteration according to the implementation's conformance model.
+
+Additional metadata MAY be provided, provided it does not alter NDI's core non-evaluative responsibility.
+
+---
+
+9. Time and Ordering
+
+NDI does not assume that wall-clock timestamps alone establish authoritative ordering.
+
+A conforming implementation MUST define the ordering semantics applicable within its scope.
+
+It MUST distinguish, where applicable, between:
+
+- wall-clock time;
+- observation time;
+- record-creation time;
+- sequence position;
+- externally witnessed or trusted time; and
+- other ordering assertions.
+
+Clock skew, backdating, replay, delayed ingestion, network partition and related conditions MUST NOT be concealed behind an unsupported claim of universal chronological certainty.
+
+NDI establishes only the ordering properties its implementation can demonstrate.
+
+---
+
+10. Duplicate and Replay Handling
+
+A conforming implementation MUST define its behaviour when:
+
+- the same representation is observed repeatedly;
+- equivalent content appears through different representations;
+- a previously recorded event is replayed;
+- the same disclosure is observed through different ingress paths; or
+- observations occur concurrently or cannot be deterministically ordered.
+
+NDI does not require semantic deduplication.
+
+Where equivalence cannot be established without interpretation, records MAY remain independently represented.
+
+An implementation MUST NOT silently convert uncertain equivalence into a claim of identical origin.
+
+---
+
+11. Neutrality
+
+Within NDI, neutrality is an architectural constraint, not a claim that an operator has no interests, policies, or biases.
+
+Neutrality means that the NDI observation responsibility itself does not determine:
+
+- truth;
+- authenticity;
+- authorship;
+- ownership;
+- originality;
+- legal entitlement;
+- provenance;
+- trustworthiness;
+- ranking;
+- policy compliance;
+- reputational value; or
+- downstream action.
+
+These determinations may be performed by other systems.
+
+They are outside the NDI responsibility.
+
+Neutrality therefore arises primarily through separation and exclusion of evaluative functions, rather than through a claim that every implementation observes everything.
+
+---
+
+12. Explicit Non-Claims
+
+An NDI observation record MUST NOT, solely by virtue of its existence, be interpreted as evidence that:
+
+- the observer or submitter created the material;
+- the observer or submitter owns the material;
+- the material is original;
+- the material is authentic;
+- the material is true;
+- the material is lawful;
+- the material was authorised for disclosure;
+- the observation represents the first occurrence globally;
+- the observation establishes legal priority; or
+- the material should be trusted, promoted, removed, ranked, or otherwise acted upon.
+
+An earlier NDI record is an earlier recorded observation within the applicable scope and ordering domain.
+
+It is not a verdict about priority of creation or entitlement.
+
+This limitation is part of NDI's architecture, not merely a legal disclaimer.
+
+---
+
+13. Integrity and Record Continuity
+
+NDI does not require one prescribed cryptographic implementation.
+
+A conforming implementation MUST, however, provide mechanisms appropriate to its claimed conformance level for detecting unauthorised retrospective:
+
+- alteration;
+- insertion;
+- deletion;
+- substitution; or
+- reordering
+
+of observation records.
+
+Implementations MAY use append-only logs, cryptographic commitments, signatures, externally witnessed state, transparency mechanisms, or other suitable techniques.
+
+NDI specifies the required architectural property rather than mandating a particular implementation primitive.
+
+Absolute immutability is not assumed.
+
+---
+
+14. Failure, Suppression and Omission
+
+NDI cannot record what its declared observation boundary does not observe.
+
+Potential failure conditions include:
+
+- intentional suppression;
+- pre-boundary filtering;
+- unavailable sources;
+- access restrictions;
+- implementation outage;
+- ingestion failure;
+- clock manipulation;
+- record replay;
+- delayed recording;
+- operator compromise; and
+- selective retention.
+
+A conforming implementation MUST document material failure modes relevant to its claimed scope.
+
+Where a failure is detectable, the architecture SHOULD support representation of that condition without converting it into a judgment about the underlying disclosure.
+
+Absence of a record MUST NOT be treated as proof that an event did not occur.
+
+---
+
+15. Relationship to Timestamping
+
+Trusted timestamping can establish evidence that particular data existed at or before a stated time.
+
+NDI may use timestamping mechanisms, but timestamping alone does not define NDI.
+
+NDI additionally defines:
+
+- a declared observation boundary;
+- a qualifying observation event;
+- scope semantics;
+- an ordering domain;
+- explicit separation from downstream evaluation;
+- observation-record semantics; and
+- mandatory non-claims.
+
+The architectural distinction is therefore not a novel timestamping mechanism.
+
+It is the proposed responsibility contract surrounding the observation event.
+
+---
+
+16. Relationship to Transparency Logs
+
+Transparency logs provide important precedent for append-only, auditable and verifiable record structures.
+
+NDI may be implemented using transparency-log techniques.
+
+However, NDI is not defined by a particular log technology or application domain.
+
+NDI's proposition is that a transparency mechanism MAY satisfy the NDI responsibility where it also satisfies the required observation-boundary, scope, record-semantic, neutrality and conformance properties.
+
+NDI therefore does not require existing infrastructure to be replaced merely because it predates NDI.
+
+An existing system could potentially be NDI-conforming if it satisfies the defined architectural contract.
+
+---
+
+17. Relationship to Provenance and C2PA
+
+Provenance architectures can describe origin claims, actors, transformations, credentials and the history of digital content.
+
+NDI deliberately stops earlier.
+
+A simplified distinction is:
+
+«NDI establishes a scoped observation reference. Provenance systems may subsequently describe the trail.»
+
+NDI does not compete with or replace provenance standards such as C2PA.
+
+A downstream provenance system MAY reference an NDI observation record where useful, but such integration is outside the core NDI responsibility.
+
+---
+
+18. Relationship to Logging, Audit and Registries
+
+Ordinary system logging generally records events relevant to operation of a particular system.
+
+Audit systems record information required for later examination or accountability.
+
+Registries maintain structured records about defined entities or claims.
+
+NDI may use mechanisms common to all three.
+
+Its proposed distinction is not the storage mechanism but the explicitly separated responsibility to record a qualifying observation at a declared boundary without importing downstream evaluative claims into that observation record.
+
+If an existing logging, audit, or registry architecture satisfies that responsibility and the NDI conformance contract, NDI does not require duplication of the underlying mechanism.
+
+---
+
+19. Architectural Independence
+
+NDI is defined independently of any specific:
+
+- commercial platform;
+- AI model;
+- provenance provider;
+- blockchain;
+- timestamp authority;
+- identity provider;
+- government;
+- standards organisation; or
+- ThopertyBox™ implementation.
+
+Architectural independence does not imply operational independence from every dependency.
+
+A conforming implementation MUST disclose material dependencies relevant to verification of its observation records.
+
+---
+
+20. Downstream Separation
+
+After an NDI observation record exists, downstream systems may:
+
+- verify;
+- authenticate;
+- attribute;
+- establish provenance;
+- rank;
+- moderate;
+- govern;
+- investigate;
+- compare;
+- audit;
+- recommend; or
+- otherwise interpret the observation.
+
+Those activities do not retroactively change what the NDI observation record asserts.
+
+They may add new information, challenge assumptions, discover earlier evidence, or reach conflicting conclusions.
+
+NDI preserves the bounded observation reference while allowing those downstream systems to remain independent.
+
+---
+
+21. Conformance
+
+An implementation claiming NDI conformance MUST, at minimum:
+
+1. declare its implementation scope;
+2. identify its observation boundary;
+3. define what constitutes a qualifying observation;
+4. bind records to the observed representation;
+5. define applicable ordering semantics;
+6. distinguish ordering from unsupported wall-clock certainty;
+7. define duplicate/replay behaviour;
+8. provide mechanisms for detecting unauthorised retrospective record alteration appropriate to its conformance claim;
+9. disclose material pre-observation filtering or admission constraints;
+10. publish the semantics of its observation records;
+11. preserve the explicit NDI non-claims; and
+12. maintain separation between observation and downstream evaluative functions.
+
+Conformance does not require identical implementations.
+
+Different implementations MAY use different technical mechanisms while satisfying the same architectural responsibility.
+
+---
+
+22. Security Considerations
+
+NDI does not eliminate adversarial behaviour.
+
+Relevant threats include:
+
+- malicious or unauthorised submissions;
+- copied-content front-running;
+- replay attacks;
+- timestamp manipulation;
+- record insertion or suppression;
+- split-view or inconsistent record presentation;
+- pre-boundary filtering;
+- denial of observation;
+- scope misrepresentation;
+- operator compromise;
+- misleading downstream interpretation; and
+- attempts to present an observation record as proof of ownership, originality, authenticity, or truth.
+
+A neutral record of malicious or copied material remains a valid record of the observation event.
+
+It does not legitimise the material.
+
+Implementations MUST therefore preserve the distinction between record validity and content validity.
+
+---
+
+23. What NDI Does Not Attempt to Solve
+
+NDI does not attempt to solve:
+
+- global firstness;
+- universal ordering across independent scopes;
+- authorship;
+- ownership;
+- originality;
+- truth;
+- authenticity;
+- content safety;
+- copyright or patent priority;
+- identity;
+- provenance;
+- platform governance;
+- regulatory compliance;
+- ranking;
+- moderation; or
+- universal trust.
+
+These may be legitimate downstream responsibilities.
+
+Adding them to NDI would change the responsibility being proposed.
+
+---
+
+24. Deployment and Adoption Are Separate Questions
+
+This reference architecture defines a responsibility.
+
+It does not predict that creators, organisations, platforms, governments, or AI systems will adopt it.
+
+Potential workflows—including establishing an observation reference before wider disclosure—are deployment and adoption hypotheses, not properties guaranteed by NDI.
+
+Such hypotheses require separate technical, economic, behavioural, governance and legal evaluation.
+
+They are intentionally excluded from the core architectural definition.
+
+---
+
+25. Relationship to ThopertyBox™
+
+NDI originated within the broader ThopertyBox™ work.
+
+The NDI reference architecture is intentionally separated from that commercial and product context.
+
+A ThopertyBox implementation MAY use NDI.
+
+NDI does not require ThopertyBox, and an NDI-conforming implementation need not have any relationship with ThopertyBox.
+
+This separation is necessary for NDI to be evaluated on architectural merit rather than commercial ownership or product strategy.
+
+---
+
+26. North Star Restated
+
+NDI does not ask downstream systems to agree.
+
+It does not ask one observer to determine universal origin.
+
+It does not replace provenance, verification, audit, governance, policy, or trust.
+
+It proposes something smaller:
+
+«Preserve a neutral, scope-bounded reference to the qualifying observation before downstream interpretation begins.»
+
+One reference responsibility.
+
+Many independent paths may follow.
+
+---
+
+27. Invitation to Technical Review
+
+NDI v2.3 is presented as a candidate architectural responsibility, not a completed standard.
+
+Review is specifically invited on the following questions:
+
+1. Is the NDI observation responsibility sufficiently distinct from ordinary timestamping, transparency logging, audit, registries, archiving, and provenance?
+
+2. Are the observation boundary, qualifying observation event, declared scope, and ordering domain sufficiently precise to support independent implementation?
+
+3. Does the architecture successfully prevent scoped observation from being misinterpreted as global firstness, authorship, ownership, originality, authenticity, or truth?
+
+4. Is neutrality adequately expressed as architectural separation and exclusion rather than as an unsupported claim about operator behaviour?
+
+5. Are the minimum observation-record and conformance requirements sufficient without prematurely prescribing implementation mechanisms?
+
+6. Are pre-boundary filtering, suppression, replay, ordering manipulation, duplicate handling, front-running, and operator compromise adequately recognised?
+
+7. Could existing infrastructure satisfy this responsibility through an NDI conformance profile, or does the proposed responsibility collapse into an already-established architectural category?
+
+8. Is there any material architectural defect that should prevent this candidate from proceeding to serious human technical review?
+
+---
+
+Closing Principle
+
+Before AI amplifies it, NDI anchors it.
+
+Within this architecture, anchors means establishing and preserving a neutral, scope-bounded observation reference.
+
+It does not mean proving origin, ownership, truth, or universal firstness.
+
+That distinction is intentional.
