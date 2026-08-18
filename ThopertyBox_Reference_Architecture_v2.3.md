@@ -1,5 +1,5 @@
 
-NDI™ Reference Architecture v2.3
+NDI™ Reference Architecture v2.3 
 
 Candidate Public Working Draft
 
